@@ -1,0 +1,23 @@
+package com.fullstack.smartcity.user_service.entity;
+
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.util.Date;
+
+@Data
+@Document
+public class Citizen {
+    @Id
+    private String id;
+    @Field("user_id")
+    private String userId;
+    private String phoneNumber;
+    private String address;
+    private String city;
+    private int pinCode;
+    private Date createdOn;
+    private Date updatedOn;
+}

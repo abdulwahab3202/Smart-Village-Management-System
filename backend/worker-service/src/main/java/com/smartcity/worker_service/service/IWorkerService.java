@@ -1,0 +1,22 @@
+package com.smartcity.worker_service.service;
+
+import com.smartcity.worker_service.model.CommonResponse;
+import com.smartcity.worker_service.request.WorkerRequest;
+
+public interface IWorkerService {
+
+    CommonResponse createWorkerProfile(WorkerRequest workerRequest);
+
+    CommonResponse getAllWorkers();
+
+    CommonResponse getWorkerById(String workerId);
+
+    CommonResponse updateWorker(String workerId, WorkerRequest request);
+
+    CommonResponse deleteWorker(String workerId);
+
+    CommonResponse findAvailableWorkers();
+
+    CommonResponse getAllComplaints();
+
+}

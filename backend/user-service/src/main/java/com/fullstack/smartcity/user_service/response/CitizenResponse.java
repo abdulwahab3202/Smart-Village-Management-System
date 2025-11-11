@@ -1,0 +1,19 @@
+package com.fullstack.smartcity.user_service.response;
+
+import lombok.Data;
+
+import java.util.Date;
+
+@Data
+public class CitizenResponse {
+    private String userId;
+    private String name;
+    private String email;
+    private String role;
+    private String phoneNumber;
+    private String address;
+    private String city;
+    private int pinCode;
+    private Date createdOn;
+    private Date updateOn;
+}

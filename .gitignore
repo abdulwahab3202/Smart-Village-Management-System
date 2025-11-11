@@ -1,0 +1,19 @@
+# Node.js / Frontend
+node_modules/
+dist/
+.vite/
+npm-debug.log
+.env.local
+
+# Java / Spring Boot
+target/
+.mvn/
+*.log
+*.jar
+*.war
+
+# IDE & OS files
+.idea/
+*.iml
+.vscode/
+.DS_Store
