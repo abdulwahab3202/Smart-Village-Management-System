@@ -1,5 +1,8 @@
 import React, { createContext, useState, useEffect } from 'react';
+import Swal from 'sweetalert2';
+
 export const StoreContext = createContext(null);
+
 const StoreContextProvider = (props) => {
   const [token, setToken] = useState(localStorage.getItem('authToken'));
   const [currentUser, setCurrentUser] = useState(null);
@@ -8,20 +11,31 @@ const StoreContextProvider = (props) => {
   const [allAssignments, setAllAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // --- API HELPER ---
   const makeAuthenticatedRequest = async (url, options = {}) => {
     const currentToken = localStorage.getItem('authToken');
     if (!currentToken) throw new Error("Not authenticated");
+
     const defaultOptions = {
       headers: {
-        'Authorization': `Bearer ${currentToken}`,
+        'Authorization': `Bearer ${currentToken}`, // Fixed backticks
         'Content-Type': 'application/json',
       },
       ...options,
     };
+
     const response = await fetch(url, defaultOptions);
+    
+    // Handle Session Expiry
+    if (response.status === 401 || response.status === 403) {
+        logout();
+        throw new Error("Session expired. Please log in again.");
+    }
+
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || `API Error: ${response.statusText}`);
+      throw new Error(errorData.message || `API Error: ${response.statusText}`); // Fixed backticks
     }
     if (response.status === 204 || response.headers.get("content-length") === "0") {
         return null; 
@@ -30,6 +44,7 @@ const StoreContextProvider = (props) => {
     return data;
   };
 
+  // --- AUTH FUNCTIONS ---
   const login = async (email, password) => {
     const response = await fetch('http://localhost:8081/api/user/login', {
       method: 'POST',
@@ -80,46 +95,65 @@ const StoreContextProvider = (props) => {
     setAllAssignments([]);
   };
 
+  // --- DATA FETCHING (With Merging) ---
   const fetchData = async (user) => {
     if (!token || !user) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
+      // Fetch core data
       const apiCalls = [
         makeAuthenticatedRequest('http://localhost:8080/api/complaint/get-all'),
         makeAuthenticatedRequest('http://localhost:8082/api/work-assignment/get-all-assignments')
       ];
+      
+      // If Admin, fetch users and workers to resolve names
       if (user.role === 'ADMIN') {
         apiCalls.push(makeAuthenticatedRequest('http://localhost:8081/api/user/get-all'));
         apiCalls.push(makeAuthenticatedRequest('http://localhost:8082/api/worker/get-all'));
       }
+
       const [complaintsRes, assignmentsRes, usersRes, workersRes] = await Promise.all(apiCalls);
+
       const allComplaints = complaintsRes.data || [];
       const allAssignmentsData = assignmentsRes.data || [];
       const allUsersData = usersRes ? (usersRes.data || []) : [];
       const allWorkersData = workersRes ? (workersRes.data || []) : [];
+
       setAllAssignments(allAssignmentsData);
-      setAllUsers(allUsersData);
+      setAllUsers(allUsersData); // For User Management
+
+      // Create Maps for fast lookups
       const assignmentsMap = new Map(allAssignmentsData.map(a => [a.complaintId, a]));
       const complaintTitleMap = new Map(allComplaints.map(c => [c.id, c.title]));
+      
+      // Combine citizen and worker lists to find names by ID
       const combinedUserList = [...allUsersData, ...allWorkersData];
       const usersMap = new Map(combinedUserList.map(u => [u.id || u.workerId, u.name]));
+
+      // Enrich Complaints with Worker info
       const enrichedComplaints = allComplaints.map(complaint => ({
         ...complaint,
         assignmentId: assignmentsMap.get(complaint.id)?.assignmentId,
         workerId: assignmentsMap.get(complaint.id)?.workerId,
         userName: usersMap.get(complaint.userId) || 'Unknown User',
       }));
+      setComplaints(enrichedComplaints);
+
+      // Enrich Assignments with Complaint Title & Worker Name
       const enrichedAssignments = allAssignmentsData.map(assignment => ({
         ...assignment,
         complaintTitle: complaintTitleMap.get(assignment.complaintId) || 'Unknown Complaint',
         workerName: usersMap.get(assignment.workerId) || 'Unknown Worker',
       }));
-      setComplaints(enrichedComplaints);
       setAllAssignments(enrichedAssignments);
-    } catch (err) { setError(err.message); } finally { setLoading(false); }
+
+    } catch (err) { 
+        if (err.message !== "Session expired") setError(err.message);
+    } finally { setLoading(false); }
   };
   
+  // Specific Fetch Functions
   const fetchAllUsers = async () => (await makeAuthenticatedRequest('http://localhost:8081/api/user/get-all')).data;
   const fetchAllCitizens = async () => (await makeAuthenticatedRequest('http://localhost:8081/api/user/get-all-citizens')).data;
   const fetchAllWorkers = async () => (await makeAuthenticatedRequest('http://localhost:8082/api/worker/get-all')).data;
@@ -130,22 +164,23 @@ const StoreContextProvider = (props) => {
   const fetchComplaintById = async (complaintId) => (await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/get/${complaintId}`)).data;
   const fetchUserById = async (userId) => (await makeAuthenticatedRequest(`http://localhost:8081/api/user/get/${userId}`)).data;
 
+  // --- ACTION FUNCTIONS ---
   const deleteUser = async (userId) => {
     try {
       await makeAuthenticatedRequest(`http://localhost:8081/api/user/delete/${userId}`, { method: 'DELETE' });
-      alert('User deleted successfully.');
+      Swal.fire('Deleted!', 'The user has been deleted.', 'success');
     } catch(err) {
-      alert(err.message);
+      Swal.fire('Error', err.message, 'error');
     }
   };
 
   const deleteComplaint = async (complaintId) => {
     try {
       await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/delete/${complaintId}`, { method: 'DELETE' });
-      alert('Complaint deleted successfully.');
+      Swal.fire('Deleted!', 'The complaint has been deleted.', 'success');
       await fetchData(currentUser);
     } catch(err) {
-      alert(err.message);
+      Swal.fire('Error', err.message, 'error');
     }
   };
   
@@ -156,30 +191,30 @@ const StoreContextProvider = (props) => {
             method: 'POST',
             body: JSON.stringify({ workerId: currentUser.id, complaintId, creditPoints: 100 })
         });
-        alert('Complaint assigned successfully!');
+        Swal.fire('Assigned!', 'Complaint assigned successfully.', 'success');
         await fetchData(currentUser);
     } catch(err) {
-        alert(err.message);
+        Swal.fire('Error', err.message, 'error');
     }
   };
 
   const updateComplaintStatus = async (assignmentId, newStatus) => {
     try {
         await makeAuthenticatedRequest(`http://localhost:8082/api/work-assignment/status/${assignmentId}?status=${newStatus}`, { method: 'PUT' });
-        alert('Status updated successfully!');
+        Swal.fire('Updated!', 'Status updated successfully.', 'success');
         await fetchData(currentUser);
     } catch(err) {
-        alert(`Error: ${err.message}`);
+        Swal.fire('Error', err.message, 'error');
     }
   };
 
   const applyPenalty = async (assignmentId, penaltyPoints) => {
     try {
       await makeAuthenticatedRequest(`http://localhost:8082/api/work-assignment/penalty/${assignmentId}?penaltyPoints=${penaltyPoints}`, { method: 'PUT' });
-      alert('Penalty applied successfully!');
+      Swal.fire('Applied!', 'Penalty applied successfully.', 'success');
       await fetchData(currentUser);
     } catch (err) {
-      alert(`Error: ${err.message}`);
+      Swal.fire('Error', err.message, 'error');
     }
   };
   
@@ -198,7 +233,7 @@ const StoreContextProvider = (props) => {
       }
       return false;
     } catch (err) {
-      console.error("Failed to update user:", err);
+      Swal.fire('Error', 'Failed to update user profile.', 'error');
       return false;
     }
   };
@@ -217,8 +252,8 @@ const StoreContextProvider = (props) => {
   const contextValue = {
     token, currentUser, complaints, allUsers, allAssignments, loading, error, login, register, logout,
     fetchComplaints: fetchData, fetchAllUsers, fetchAllCitizens, fetchAllWorkers, findAvailableWorkers,
-    deleteUser, deleteComplaint, assignComplaint, updateComplaintStatus, applyPenalty, updateUser, fetchUserComplaints,
-     fetchWorkerAssignments, fetchWorkerById, fetchComplaintById, fetchUserById,
+    deleteUser, deleteComplaint, assignComplaint, updateComplaintStatus, applyPenalty, updateUser, 
+    fetchUserComplaints, fetchWorkerAssignments, fetchWorkerById, fetchComplaintById, fetchUserById,
     isSignedIn: !!token,
   };
 

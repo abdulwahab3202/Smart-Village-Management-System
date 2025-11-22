@@ -1,27 +1,30 @@
 import React, { useState, useContext } from 'react';
 import { StoreContext } from '../context/StoreContext';
-import Swal from 'sweetalert2';
 import { LoadingSpinner } from './Icons';
+import Swal from 'sweetalert2';
 const FormInput = ({ label, name, error, ...props }) => (
   <div className="mb-2">
     <label htmlFor={name} className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
     <input 
       id={name} name={name} {...props}
-      className={`block w-full px-3 py-2.5 bg-slate-50 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
+      className={`block w-full px-3 py-1 bg-slate-50 border rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
     />
-    <p className="mt-1 text-sm text-red-600 h-5">{error || ''}</p>
+    {/* Fixed height for error message to prevent layout shift */}
+    <p className="mt-1 text-xs text-red-600 h-4">{error || ''}</p>
   </div>
 );
+
 const FormSelect = ({ label, name, value, error, children, ...props }) => (
-  <div>
+  <div className>
     <label htmlFor={name} className="block text-xs font-medium text-slate-600 mb-1">{label}</label>
     <select
       id={name} name={name} value={value} {...props}
-      className={`block w-full px-3 py-2 bg-slate-50 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
+      className={`block w-full px-3 py-1 bg-slate-50 border rounded-lg shadow-sm focus:outline-none focus:ring-2 ${error ? 'border-red-500 focus:ring-red-500' : 'border-slate-300 focus:ring-blue-500'}`}
     >
       {children}
     </select>
-    <p className="mt-1 text-sm text-red-600 h-5">{error || ''}</p>
+    {/* Fixed height for error message to prevent layout shift */}
+    <p className="mt-1 text-xs text-red-600 h-4">{error || ''}</p>
   </div>
 );
 
@@ -98,7 +101,7 @@ const RegisterForm = ({ onClose, onToggleView }) => {
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
       
-      <h1 className="text-3xl font-bold text-center text-slate-800">Create Your Account</h1>
+      <h1 className="text-3xl font-bold text-center text-slate-800 mb-6">Create Your Account</h1>
       
       <form onSubmit={handleRegister} className="mt-2">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6">
@@ -149,7 +152,7 @@ const RegisterForm = ({ onClose, onToggleView }) => {
         </div>
       </form>
 
-      <p className="text-sm text-center text-slate-500 pt-3 border-t border-slate-200 mt-4">
+      <p className="text-sm text-center text-slate-500 pt-3 border-t border-slate-200 mt-2">
         Already have an account?
         <button onClick={onToggleView} className="font-semibold text-blue-600 hover:text-blue-500 ml-1">
           Login
