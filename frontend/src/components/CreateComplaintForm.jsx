@@ -50,7 +50,7 @@ const CreateComplaintForm = ({ onClose, onSuccess }) => {
 
   return (
     <div className="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="relative w-full max-w-lg p-8 space-y-6 bg-white rounded-xl shadow-2xl">
+      <div className="relative w-full max-w-lg max-h-[85vh] overflow-y-auto no-scrollbar p-8 space-y-6 bg-white rounded-xl shadow-2xl">
         <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
@@ -59,7 +59,7 @@ const CreateComplaintForm = ({ onClose, onSuccess }) => {
 
         {error && <p className="text-center text-sm text-red-600 bg-red-100 p-2 rounded-lg">{error}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto no-scrollbar">
           <div>
             <label className="block text-sm font-semibold text-slate-600">Title</label>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Broken Streetlight on Main St" className="mt-1 block w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"/>

@@ -59,7 +59,6 @@ const UserManagement = () => {
       {label}
     </button>
   );
-  console.log(usersToDisplay);
 
   return (
     <div className="bg-slate-100 px-4 py-5 sm:p-6 min-h-screen">

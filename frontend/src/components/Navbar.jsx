@@ -41,11 +41,6 @@ const Navbar = ({ onSignInClick }) => {
 
   if (isSignedIn) {
     navLinks.push({ to: '/complaints', label: 'Complaints' });
-    if (currentUser && currentUser.role === 'ADMIN') {
-      navLinks.push({ to: '/admin/complaints', label: 'Complaint Mgmt' });
-      navLinks.push({ to: '/admin/users', label: 'User Mgmt' });
-      navLinks.push({ to: '/admin/worker-assignments', label: 'Worker & Assignment Mgmt' });
-    }
   }
   
   const handleSignInClick = () => {
