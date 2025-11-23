@@ -67,7 +67,6 @@ const UserManagement = () => {
           Admin Dashboard: User Management
         </h1>
 
-        {/* FILTER BUTTONS responsive layout */}
         <div className="mb-4 flex flex-col sm:flex-row gap-2 sm:gap-3 p-2 bg-white rounded-lg shadow-sm">
           <ViewButton view="ALL" label="All Users" />
           <ViewButton view="CITIZEN" label="Citizens" />

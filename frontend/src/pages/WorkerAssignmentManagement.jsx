@@ -47,7 +47,6 @@ const WorkerAssignmentManagement = () => {
     }
   };
 
-  // --- RESTORED LOGIC FOR AVAILABLE WORKERS LIST ---
   const renderAvailableWorkers = () => (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       {loading ? (
@@ -71,10 +70,6 @@ const WorkerAssignmentManagement = () => {
       )}
     </div>
   );
-  // --- END RESTORED LOGIC ---
-
-
-  // Content for the Assignments Table/Cards
   const renderAssignments = () => {
     if (loading) return <div className="p-12 text-center text-slate-500">Loading...</div>;
     if (error) return <div className="p-12 text-center text-red-600 bg-red-100 rounded-md">{error}</div>;
@@ -85,7 +80,6 @@ const WorkerAssignmentManagement = () => {
 
     return (
       <>
-        {/* 1. Desktop View (Table - Visible on md and up) */}
         <div className="hidden md:block bg-white rounded-lg shadow-md overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
@@ -121,7 +115,6 @@ const WorkerAssignmentManagement = () => {
           </table>
         </div>
 
-        {/* 2. Mobile View (Card Grid - Visible below md) */}
         <div className="md:hidden grid grid-cols-1 gap-4">
           {allAssignments.map((assignment) => (
             <div key={assignment.assignmentId} className="bg-white p-4 rounded-lg shadow space-y-2 border-l-4 border-red-500">
@@ -160,12 +153,12 @@ const WorkerAssignmentManagement = () => {
 
           <div className="lg:col-span-1">
             <h2 className="text-2xl font-bold text-slate-700 mb-4">Available Workers</h2>
-            {renderAvailableWorkers()} {/* <-- Renders the fixed list */}
+            {renderAvailableWorkers()}
           </div>
 
           <div className="lg:col-span-2">
             <h2 className="text-2xl font-bold text-slate-700 mb-4">All Work Assignments</h2>
-            {renderAssignments()} {/* <-- Renders the responsive table/cards */}
+            {renderAssignments()}
           </div>
         </div>
       </div>
