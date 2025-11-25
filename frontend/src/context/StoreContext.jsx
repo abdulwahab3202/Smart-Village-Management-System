@@ -12,7 +12,6 @@ const StoreContextProvider = (props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // --- API HELPER ---
   const makeAuthenticatedRequest = async (url, options = {}) => {
     const currentToken = localStorage.getItem('authToken');
     if (!currentToken) throw new Error("Not authenticated");
@@ -27,7 +26,6 @@ const StoreContextProvider = (props) => {
 
     const response = await fetch(url, defaultOptions);
     
-    // Handle Session Expiry
     if (response.status === 401 || response.status === 403) {
         logout();
         throw new Error("Session expired. Please log in again.");
@@ -44,7 +42,6 @@ const StoreContextProvider = (props) => {
     return data;
   };
 
-  // --- AUTH FUNCTIONS ---
   const login = async (email, password) => {
     const response = await fetch('http://localhost:8081/api/user/login', {
       method: 'POST',
@@ -95,19 +92,16 @@ const StoreContextProvider = (props) => {
     setAllAssignments([]);
   };
 
-  // --- DATA FETCHING (With Merging) ---
   const fetchData = async (user) => {
     if (!token || !user) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
-      // Fetch core data
       const apiCalls = [
         makeAuthenticatedRequest('http://localhost:8080/api/complaint/get-all'),
         makeAuthenticatedRequest('http://localhost:8082/api/work-assignment/get-all-assignments')
       ];
       
-      // If Admin, fetch users and workers to resolve names
       if (user.role === 'ADMIN') {
         apiCalls.push(makeAuthenticatedRequest('http://localhost:8081/api/user/get-all'));
         apiCalls.push(makeAuthenticatedRequest('http://localhost:8082/api/worker/get-all'));
@@ -121,17 +115,12 @@ const StoreContextProvider = (props) => {
       const allWorkersData = workersRes ? (workersRes.data || []) : [];
 
       setAllAssignments(allAssignmentsData);
-      setAllUsers(allUsersData); // For User Management
-
-      // Create Maps for fast lookups
+      setAllUsers(allUsersData);
       const assignmentsMap = new Map(allAssignmentsData.map(a => [a.complaintId, a]));
       const complaintTitleMap = new Map(allComplaints.map(c => [c.id, c.title]));
-      
-      // Combine citizen and worker lists to find names by ID
       const combinedUserList = [...allUsersData, ...allWorkersData];
       const usersMap = new Map(combinedUserList.map(u => [u.id || u.workerId, u.name]));
 
-      // Enrich Complaints with Worker info
       const enrichedComplaints = allComplaints.map(complaint => ({
         ...complaint,
         assignmentId: assignmentsMap.get(complaint.id)?.assignmentId,
@@ -139,8 +128,7 @@ const StoreContextProvider = (props) => {
         userName: usersMap.get(complaint.userId) || 'Unknown User',
       }));
       setComplaints(enrichedComplaints);
-
-      // Enrich Assignments with Complaint Title & Worker Name
+      
       const enrichedAssignments = allAssignmentsData.map(assignment => ({
         ...assignment,
         complaintTitle: complaintTitleMap.get(assignment.complaintId) || 'Unknown Complaint',
@@ -152,8 +140,7 @@ const StoreContextProvider = (props) => {
         if (err.message !== "Session expired") setError(err.message);
     } finally { setLoading(false); }
   };
-  
-  // Specific Fetch Functions
+
   const fetchAllUsers = async () => (await makeAuthenticatedRequest('http://localhost:8081/api/user/get-all')).data;
   const fetchAllCitizens = async () => (await makeAuthenticatedRequest('http://localhost:8081/api/user/get-all-citizens')).data;
   const fetchAllWorkers = async () => (await makeAuthenticatedRequest('http://localhost:8082/api/worker/get-all')).data;
@@ -164,7 +151,6 @@ const StoreContextProvider = (props) => {
   const fetchComplaintById = async (complaintId) => (await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/get/${complaintId}`)).data;
   const fetchUserById = async (userId) => (await makeAuthenticatedRequest(`http://localhost:8081/api/user/get/${userId}`)).data;
 
-  // --- ACTION FUNCTIONS ---
   const deleteUser = async (userId) => {
     try {
       await makeAuthenticatedRequest(`http://localhost:8081/api/user/delete/${userId}`, { method: 'DELETE' });
