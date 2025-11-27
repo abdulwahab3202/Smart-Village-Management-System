@@ -152,8 +152,12 @@ public class WorkerServiceImpl implements IWorkerService {
     }
 
     @Override
-    public CommonResponse getAllComplaints(){
-        ResponseEntity<CommonResponse> response = complaintClient.getAllComplaints();
+    public CommonResponse getAllComplaints(HttpServletRequest request){
+        Claims claims = (Claims) request.getAttribute("userClaims");
+        String workerId = claims.get("userId", String.class);
+        Worker worker = workerRepository.getWorkerById(workerId);
+        String workerCategory = worker.getSpecialization();
+        ResponseEntity<CommonResponse> response = complaintClient.getAllComplaints(workerCategory);
         return response.getBody();
     }
 

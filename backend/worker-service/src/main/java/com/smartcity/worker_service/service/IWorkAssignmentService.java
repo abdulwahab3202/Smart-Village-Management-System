@@ -17,6 +17,6 @@ public interface IWorkAssignmentService {
 
     CommonResponse deleteAssignment(String assignmentId);
 
-    CommonResponse applyPenalty(String assignmentId, int penaltyPoints);
+    CommonResponse applyPenalty(String assignmentId);
 
 }

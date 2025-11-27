@@ -13,10 +13,14 @@ public interface IComplaintController {
     ResponseEntity<CommonResponse> createComplaint(HttpServletRequest request,
                                                    @RequestPart(value = "title") String title,
                                                    @RequestPart(value = "description") String description,
+                                                   @RequestPart(value = "worker-category") String workerCategory,
                                                    @RequestPart(value = "image") MultipartFile image);
 
     @GetMapping("/get-all")
     ResponseEntity<CommonResponse> getAllComplaints();
+
+    @GetMapping("/get-complaints")
+    ResponseEntity<CommonResponse> getComplaintsByCategory(@RequestParam(value="worker-category") String workerCategory);
 
     @GetMapping("/get/{complaintId}")
     ResponseEntity<CommonResponse> getComplaintById(@PathVariable String complaintId);

@@ -16,25 +16,21 @@ const WorkerAssignmentManagement = () => {
 
   const handleApplyPenalty = (assignmentId) => {
     Swal.fire({
-      title: 'Apply Penalty',
-      text: 'Enter the number of penalty points to apply:',
-      input: 'number',
-      inputAttributes: { min: '1', step: '1' },
-      inputValue: 10,
+      title: "Are you sure?",
+      text: "Penalty will be applied to this worker.",
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonText: 'Apply Penalty',
-      confirmButtonColor: '#d33',
+      confirmButtonText: "Yes, Apply Penalty",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#d33",
     }).then((result) => {
-      if (result.isConfirmed && result.value) {
-        const penaltyPoints = parseInt(result.value, 10);
-        if (!isNaN(penaltyPoints) && penaltyPoints > 0) {
-          applyPenalty(assignmentId, penaltyPoints);
-        } else {
-          Swal.fire('Error', 'Please enter a valid number greater than zero.', 'error');
-        }
+      if (result.isConfirmed) {
+        applyPenalty(assignmentId);
+        Swal.fire("Success", "Penalty has been applied.", "success");
       }
     });
   };
+
 
   const getStatusBadgeColor = (status) => {
     switch (status?.toUpperCase()) {
@@ -101,8 +97,8 @@ const WorkerAssignmentManagement = () => {
                       onClick={() => handleApplyPenalty(assignment.assignmentId)}
                       disabled={assignment.status?.toUpperCase() !== "COMPLETED"}
                       className={`text-sm font-medium transition-all ${assignment.status?.toUpperCase() === "COMPLETED"
-                          ? "text-red-600 hover:text-red-900 cursor-pointer"
-                          : "text-gray-400 cursor-not-allowed opacity-50"
+                        ? "text-red-600 hover:text-red-900 cursor-pointer"
+                        : "text-gray-400 cursor-not-allowed opacity-50"
                         }`}
                     >
                       Apply Penalty
@@ -129,8 +125,8 @@ const WorkerAssignmentManagement = () => {
                   onClick={() => handleApplyPenalty(assignment.assignmentId)}
                   disabled={assignment.status?.toUpperCase() !== 'COMPLETED'}
                   className={`text-sm font-medium transition-all ${assignment.status === "COMPLETED"
-                      ? 'text-red-600 hover:text-red-800 cursor-pointer'
-                      : 'text-gray-400 cursor-not-allowed opacity-50'
+                    ? 'text-red-600 hover:text-red-800 cursor-pointer'
+                    : 'text-gray-400 cursor-not-allowed opacity-50'
                     }`}
                 >
                   Apply Penalty

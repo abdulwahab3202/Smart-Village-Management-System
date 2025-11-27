@@ -27,10 +27,11 @@ public class ComplaintController implements IComplaintController {
     public ResponseEntity<CommonResponse> createComplaint(HttpServletRequest request,
                                                           String title,
                                                           String description,
+                                                          String workerCategory,
                                                           MultipartFile image) {
         try {
             // We create a request object here to keep the service layer clean
-            CreateComplaintRequest complaintRequest = new CreateComplaintRequest(title, description, image);
+            CreateComplaintRequest complaintRequest = new CreateComplaintRequest(title, description, workerCategory, image);
             CommonResponse response = complaintService.createComplaint(request, complaintRequest);
             return ResponseEntity.status(response.getStatusCode()).body(response);
         } catch (Exception e) {
@@ -46,6 +47,16 @@ public class ComplaintController implements IComplaintController {
             return ResponseEntity.status(response.getStatusCode()).body(response);
         } catch (Exception e) {
             return exceptionHandler(e, "Get Complaints");
+        }
+    }
+
+    @PreAuthorize("hasRole('WORKER')")
+    public ResponseEntity<CommonResponse> getComplaintsByCategory(String workerCategory) {
+        try{
+            CommonResponse response = complaintService.getComplaintsByCategory(workerCategory);
+            return ResponseEntity.status(response.getStatusCode()).body(response);
+        }catch (Exception e){
+            return exceptionHandler(e, "Get Complaints By Id");
         }
     }
 

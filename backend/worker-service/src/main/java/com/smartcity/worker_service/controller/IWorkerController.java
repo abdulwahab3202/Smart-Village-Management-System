@@ -2,6 +2,7 @@ package com.smartcity.worker_service.controller;
 
 import com.smartcity.worker_service.model.CommonResponse;
 import com.smartcity.worker_service.request.WorkerRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,5 +27,5 @@ public interface IWorkerController {
     ResponseEntity<CommonResponse> findAvailableWorkers();
 
     @GetMapping("/get-all-complaints")
-    ResponseEntity<CommonResponse> getAllComplaints();
+    ResponseEntity<CommonResponse> getAllComplaints(HttpServletRequest request);
 }

@@ -1,9 +1,9 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import Swal from 'sweetalert2';
 
 export const StoreContext = createContext(null);
 
-const StoreContextProvider = (props) => {
+export const StoreContextProvider = (props) => {
   const [token, setToken] = useState(localStorage.getItem('authToken'));
   const [currentUser, setCurrentUser] = useState(null);
   const [complaints, setComplaints] = useState([]);
@@ -12,13 +12,14 @@ const StoreContextProvider = (props) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const makeAuthenticatedRequest = async (url, options = {}) => {
+  // --- API HELPER ---
+  const makeAuthenticatedRequest = useCallback(async (url, options = {}) => {
     const currentToken = localStorage.getItem('authToken');
     if (!currentToken) throw new Error("Not authenticated");
 
     const defaultOptions = {
       headers: {
-        'Authorization': `Bearer ${currentToken}`, // Fixed backticks
+        'Authorization': `Bearer ${currentToken}`,
         'Content-Type': 'application/json',
       },
       ...options,
@@ -33,16 +34,17 @@ const StoreContextProvider = (props) => {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || `API Error: ${response.statusText}`); // Fixed backticks
+      throw new Error(errorData.message || `API Error: ${response.statusText}`);
     }
     if (response.status === 204 || response.headers.get("content-length") === "0") {
         return null; 
     }
     const data = await response.json();
     return data;
-  };
+  }, []);
 
-  const login = async (email, password) => {
+  // --- AUTH FUNCTIONS ---
+  const login = useCallback(async (email, password) => {
     const response = await fetch('http://localhost:8081/api/user/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -56,9 +58,9 @@ const StoreContextProvider = (props) => {
       setCurrentUser(data.data.user);
     }
     return data;
-  };
+  }, []);
 
-  const register = async (formData) => {
+  const register = useCallback(async (formData) => {
     let registrationPayload = {
       name: formData.name, email: formData.email, password: formData.password, role: formData.role,
     };
@@ -80,9 +82,9 @@ const StoreContextProvider = (props) => {
         setCurrentUser(data.data.user);
     }
     return data;
-  };
+  }, []);
   
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
     setToken(null);
@@ -90,19 +92,32 @@ const StoreContextProvider = (props) => {
     setComplaints([]);
     setAllUsers([]);
     setAllAssignments([]);
-  };
+  }, []);
 
-  const fetchData = async (user) => {
+  // --- DATA FETCHING (UPDATED FOR ROLE-BASED FILTERING) ---
+  const fetchData = useCallback(async (user) => {
     if (!token || !user) { setLoading(false); return; }
     setLoading(true);
     setError(null);
     try {
+      const isAdmin = user.role === 'ADMIN';
+      const isWorker = user.role === 'WORKER';
+
+      // 1. Determine which API to use based on role
+      let complaintApiUrl = 'http://localhost:8080/api/complaint/get-all'; // Default for Admin/Citizen
+      
+      if (isWorker) {
+          // Use the worker-specific endpoint with category filtering
+          const category = user.specialization || 'Plumber'; 
+          // Note: Using port 8082 as requested in your prompt
+          complaintApiUrl = `http://localhost:8082/api/worker/get-all-complaints`;
+      }
+      
       const apiCalls = [
-        makeAuthenticatedRequest('http://localhost:8080/api/complaint/get-all'),
+        makeAuthenticatedRequest(complaintApiUrl),
         makeAuthenticatedRequest('http://localhost:8082/api/work-assignment/get-all-assignments')
       ];
-      
-      if (user.role === 'ADMIN') {
+      if (isAdmin) {
         apiCalls.push(makeAuthenticatedRequest('http://localhost:8081/api/user/get-all'));
         apiCalls.push(makeAuthenticatedRequest('http://localhost:8082/api/worker/get-all'));
       }
@@ -116,8 +131,11 @@ const StoreContextProvider = (props) => {
 
       setAllAssignments(allAssignmentsData);
       setAllUsers(allUsersData);
+      
+      // Merge Data for Display
       const assignmentsMap = new Map(allAssignmentsData.map(a => [a.complaintId, a]));
       const complaintTitleMap = new Map(allComplaints.map(c => [c.id, c.title]));
+      
       const combinedUserList = [...allUsersData, ...allWorkersData];
       const usersMap = new Map(combinedUserList.map(u => [u.id || u.workerId, u.name]));
 
@@ -128,7 +146,7 @@ const StoreContextProvider = (props) => {
         userName: usersMap.get(complaint.userId) || 'Unknown User',
       }));
       setComplaints(enrichedComplaints);
-      
+
       const enrichedAssignments = allAssignmentsData.map(assignment => ({
         ...assignment,
         complaintTitle: complaintTitleMap.get(assignment.complaintId) || 'Unknown Complaint',
@@ -137,20 +155,22 @@ const StoreContextProvider = (props) => {
       setAllAssignments(enrichedAssignments);
 
     } catch (err) { 
-        if (err.message !== "Session expired") setError(err.message);
+       if (err.message !== "Session expired") setError(err.message);
     } finally { setLoading(false); }
-  };
+  }, [token, makeAuthenticatedRequest, logout]);
+  
+  // Specific Fetch Functions
+  const fetchAllUsers = useCallback(async () => (await makeAuthenticatedRequest('http://localhost:8081/api/user/get-all')).data, [makeAuthenticatedRequest]);
+  const fetchAllCitizens = useCallback(async () => (await makeAuthenticatedRequest('http://localhost:8081/api/user/get-all-citizens')).data, [makeAuthenticatedRequest]);
+  const fetchAllWorkers = useCallback(async () => (await makeAuthenticatedRequest('http://localhost:8082/api/worker/get-all')).data, [makeAuthenticatedRequest]);
+  const findAvailableWorkers = useCallback(async () => (await makeAuthenticatedRequest('http://localhost:8082/api/worker/available')).data, [makeAuthenticatedRequest]);
+  const fetchUserComplaints = useCallback(async (userId) => (await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/user/${userId}`)).data, [makeAuthenticatedRequest]);
+  const fetchWorkerAssignments = useCallback(async (workerId) => (await makeAuthenticatedRequest(`http://localhost:8082/api/work-assignment/worker/${workerId}`)).data, [makeAuthenticatedRequest]);
+  const fetchWorkerById = useCallback(async (workerId) => (await makeAuthenticatedRequest(`http://localhost:8082/api/worker/get/${workerId}`)).data, [makeAuthenticatedRequest]);
+  const fetchComplaintById = useCallback(async (complaintId) => (await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/get/${complaintId}`)).data, [makeAuthenticatedRequest]);
+  const fetchUserById = useCallback(async (userId) => (await makeAuthenticatedRequest(`http://localhost:8081/api/user/get/${userId}`)).data, [makeAuthenticatedRequest]);
 
-  const fetchAllUsers = async () => (await makeAuthenticatedRequest('http://localhost:8081/api/user/get-all')).data;
-  const fetchAllCitizens = async () => (await makeAuthenticatedRequest('http://localhost:8081/api/user/get-all-citizens')).data;
-  const fetchAllWorkers = async () => (await makeAuthenticatedRequest('http://localhost:8082/api/worker/get-all')).data;
-  const findAvailableWorkers = async () => (await makeAuthenticatedRequest('http://localhost:8082/api/worker/available')).data;
-  const fetchUserComplaints = async (userId) => (await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/user/${userId}`)).data;
-  const fetchWorkerAssignments = async (workerId) => (await makeAuthenticatedRequest(`http://localhost:8082/api/work-assignment/worker/${workerId}`)).data;
-  const fetchWorkerById = async (workerId) => (await makeAuthenticatedRequest(`http://localhost:8082/api/worker/get/${workerId}`)).data;
-  const fetchComplaintById = async (complaintId) => (await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/get/${complaintId}`)).data;
-  const fetchUserById = async (userId) => (await makeAuthenticatedRequest(`http://localhost:8081/api/user/get/${userId}`)).data;
-
+  // --- ACTION FUNCTIONS ---
   const deleteUser = async (userId) => {
     try {
       await makeAuthenticatedRequest(`http://localhost:8081/api/user/delete/${userId}`, { method: 'DELETE' });
@@ -194,9 +214,9 @@ const StoreContextProvider = (props) => {
     }
   };
 
-  const applyPenalty = async (assignmentId, penaltyPoints) => {
+  const applyPenalty = async (assignmentId) => {
     try {
-      await makeAuthenticatedRequest(`http://localhost:8082/api/work-assignment/penalty/${assignmentId}?penaltyPoints=${penaltyPoints}`, { method: 'PUT' });
+      await makeAuthenticatedRequest(`http://localhost:8082/api/work-assignment/penalty/${assignmentId}`, { method: 'PUT' });
       Swal.fire('Applied!', 'Penalty applied successfully.', 'success');
       await fetchData(currentUser);
     } catch (err) {
@@ -233,11 +253,13 @@ const StoreContextProvider = (props) => {
     } else {
       setLoading(false);
     }
-  }, [token]);
+  }, [token, fetchData]);
 
   const contextValue = {
-    token, currentUser, complaints, allUsers, allAssignments, loading, error, login, register, logout,
-    fetchComplaints: fetchData, fetchAllUsers, fetchAllCitizens, fetchAllWorkers, findAvailableWorkers,
+    token, currentUser, complaints, allUsers, allAssignments, loading, error, 
+    login, register, logout,
+    fetchComplaints: () => fetchData(currentUser),
+    fetchAllUsers, fetchAllCitizens, fetchAllWorkers, findAvailableWorkers,
     deleteUser, deleteComplaint, assignComplaint, updateComplaintStatus, applyPenalty, updateUser, 
     fetchUserComplaints, fetchWorkerAssignments, fetchWorkerById, fetchComplaintById, fetchUserById,
     isSignedIn: !!token,

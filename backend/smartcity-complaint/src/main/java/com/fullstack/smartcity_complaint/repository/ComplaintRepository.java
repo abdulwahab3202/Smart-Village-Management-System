@@ -23,6 +23,11 @@ public class ComplaintRepository {
         return mongoTemplate.findAll(Complaint.class);
     }
 
+    public List<Complaint> getComplaintsByCategory(String workerCategory){
+        Query query = new Query(Criteria.where("workerCategory").is(workerCategory));
+        return mongoTemplate.find(query, Complaint.class);
+    }
+
     public Complaint getComplaintById(String id){
         return mongoTemplate.findById(id,Complaint.class);
     }

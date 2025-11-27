@@ -11,6 +11,7 @@ public class CreateComplaintResponse {
     private String imageBase64;
     private String title;
     private String description;
+    private String workerCategory;
     private String status;
     private Date createOn;
 }

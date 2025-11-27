@@ -11,6 +11,8 @@ public interface IComplaintService {
 
     CommonResponse getAllComplaints();
 
+    CommonResponse getComplaintsByCategory(String workerCategory);
+
     CommonResponse getComplaintById(String complaintId);
 
     CommonResponse getComplaintsByUserId(String userId);

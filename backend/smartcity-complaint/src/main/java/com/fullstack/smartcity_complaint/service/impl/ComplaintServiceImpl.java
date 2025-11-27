@@ -43,6 +43,13 @@ public class ComplaintServiceImpl implements IComplaintService {
             response.setStatusCode(HttpStatus.BAD_REQUEST.value());
             return response;
         }
+        if (complaintRequest.getWorkerCategory() == null || complaintRequest.getWorkerCategory().trim().isEmpty()) {
+            response.setStatus(HttpStatus.BAD_REQUEST);
+            response.setResponseStatus(ResponseStatus.FAILED);
+            response.setMessage("Worker Category is required");
+            response.setStatusCode(HttpStatus.BAD_REQUEST.value());
+            return response;
+        }
         String imageBase64 = null;
         if (complaintRequest.getImage() != null && !complaintRequest.getImage().isEmpty()) {
             try {
@@ -71,6 +78,19 @@ public class ComplaintServiceImpl implements IComplaintService {
     public CommonResponse getAllComplaints() {
         CommonResponse response = new CommonResponse();
         List<Complaint> complaints = complaintRepository.getAllComplaints();
+        response.setResponseStatus(ResponseStatus.SUCCESS);
+        response.setMessage("Complaints Retrieved Successfully");
+        List<CreateComplaintResponse> dtos =complaints.stream().map(this::toDTO).toList();
+        response.setData(dtos);
+        response.setStatus(HttpStatus.OK);
+        response.setStatusCode(HttpStatus.OK.value());
+        return response;
+    }
+
+    @Override
+    public CommonResponse getComplaintsByCategory(String workerCategory) {
+        CommonResponse response = new CommonResponse();
+        List<Complaint> complaints = complaintRepository.getComplaintsByCategory(workerCategory);
         response.setResponseStatus(ResponseStatus.SUCCESS);
         response.setMessage("Complaints Retrieved Successfully");
         List<CreateComplaintResponse> dtos =complaints.stream().map(this::toDTO).toList();
@@ -171,10 +191,10 @@ public class ComplaintServiceImpl implements IComplaintService {
         CommonResponse response = new CommonResponse();
         List<Complaint> optionalComplaint = complaintRepository.findByUserId(userId);
         if (optionalComplaint.isEmpty()) {
-            response.setStatus(HttpStatus.NOT_FOUND);
-            response.setResponseStatus(ResponseStatus.FAILED);
-            response.setMessage("Complaint not found");
-            response.setStatusCode(HttpStatus.NOT_FOUND.value());
+            response.setStatus(HttpStatus.OK);
+            response.setResponseStatus(ResponseStatus.SUCCESS);
+            response.setMessage("No complaints found");
+            response.setStatusCode(HttpStatus.OK.value());
             return response;
         }
         response.setResponseStatus(ResponseStatus.SUCCESS);
@@ -190,6 +210,7 @@ public class ComplaintServiceImpl implements IComplaintService {
         Complaint complaint = new Complaint();
         complaint.setTitle(complaintRequest.getTitle());
         complaint.setDescription(complaintRequest.getDescription());
+        complaint.setWorkerCategory(complaintRequest.getWorkerCategory());
         return complaint;
     }
 
@@ -200,6 +221,7 @@ public class ComplaintServiceImpl implements IComplaintService {
         complaintResponse.setImageBase64(complaint.getImageBase64());
         complaintResponse.setTitle(complaint.getTitle());
         complaintResponse.setDescription(complaint.getDescription());
+        complaintResponse.setWorkerCategory(complaint.getWorkerCategory());
         complaintResponse.setStatus(complaint.getStatus());
         complaintResponse.setCreateOn(complaint.getCreatedOn());
         return complaintResponse;

@@ -11,5 +11,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class CreateComplaintRequest {
     private String title;
     private String description;
+    private String workerCategory;
     private MultipartFile image;
 }

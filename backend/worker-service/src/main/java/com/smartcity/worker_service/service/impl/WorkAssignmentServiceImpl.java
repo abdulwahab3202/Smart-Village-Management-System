@@ -183,7 +183,7 @@ public class WorkAssignmentServiceImpl implements IWorkAssignmentService {
     }
 
     @Override
-    public CommonResponse applyPenalty(String assignmentId, int penaltyPoints) {
+    public CommonResponse applyPenalty(String assignmentId) {
         CommonResponse response = new CommonResponse();
         WorkAssignment assignment = workAssignmentRepository.findById(assignmentId);
         if(assignment == null){
@@ -195,9 +195,9 @@ public class WorkAssignmentServiceImpl implements IWorkAssignmentService {
         }
         assignment.setStatus("PENALIZED");
         complaintClient.updateComplaintStatus(assignment.getComplaintId(),"PENALIZED");
-        assignment.setCreditPoints(assignment.getCreditPoints() - penaltyPoints);
+        assignment.setCreditPoints(assignment.getCreditPoints() - 100);
         Worker worker = workerRepository.getWorkerById(assignment.getWorkerId());
-        worker.setTotalCredits(worker.getTotalCredits() - penaltyPoints);
+        worker.setTotalCredits(Math.max(worker.getTotalCredits() - 50, 0));
         workerRepository.save(worker);
         workAssignmentRepository.save(assignment);
         response.setResponseStatus(ResponseStatus.SUCCESS);

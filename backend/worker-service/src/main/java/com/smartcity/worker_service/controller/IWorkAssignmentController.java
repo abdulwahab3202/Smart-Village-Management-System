@@ -26,6 +26,6 @@ public interface IWorkAssignmentController {
     ResponseEntity<CommonResponse> deleteAssignment(@PathVariable String assignmentId);
 
     @PutMapping("/penalty/{assignmentId}")
-    ResponseEntity<CommonResponse> applyPenalty(@PathVariable String assignmentId, @RequestParam int penaltyPoints);
+    ResponseEntity<CommonResponse> applyPenalty(@PathVariable String assignmentId);
 
 }

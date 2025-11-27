@@ -5,6 +5,7 @@ import com.smartcity.worker_service.model.CommonResponse;
 import com.smartcity.worker_service.model.ResponseStatus;
 import com.smartcity.worker_service.request.WorkerRequest;
 import com.smartcity.worker_service.service.IWorkerService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -85,9 +86,9 @@ public class WorkerController implements IWorkerController {
 
     @Override
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<CommonResponse> getAllComplaints() {
+    public ResponseEntity<CommonResponse> getAllComplaints(HttpServletRequest request) {
         try {
-            CommonResponse response = workerService.getAllComplaints();
+            CommonResponse response = workerService.getAllComplaints(request);
             return ResponseEntity.status(response.getStatusCode()).body(response);
         } catch (Exception e) {
             return exceptionHandler(e, "Get All Complaints");

@@ -85,9 +85,9 @@ public class WorkAssignmentController implements IWorkAssignmentController {
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<CommonResponse> applyPenalty(@PathVariable String assignmentId, @RequestParam int penaltyPoints){
+    public ResponseEntity<CommonResponse> applyPenalty(@PathVariable String assignmentId){
         try {
-            CommonResponse response = workAssignmentService.applyPenalty(assignmentId, penaltyPoints);
+            CommonResponse response = workAssignmentService.applyPenalty(assignmentId);
             return ResponseEntity.status(response.getStatusCode()).body(response);
         } catch (Exception e) {
             return exceptionHandler(e, "Apply Penalty");

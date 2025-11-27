@@ -18,7 +18,7 @@ const getStatusBadgeColor = (status) => {
 };
 
 const ComplaintCard = ({ complaint = {}, currentUser, onAssign, onUpdateStatus }) => {
-  const { id, imageBase64, title, description, status, createdOn, createOn, workerId, assignmentId } = complaint;
+  const { id, imageBase64, title, description, workerCategory, status, createdOn, createOn, workerId, assignmentId } = complaint;
   const [newStatus, setNewStatus] = useState('IN PROGRESS');
   const dateValue = createdOn || createOn;
   let formattedDate = 'Invalid Date';
@@ -51,6 +51,7 @@ const ComplaintCard = ({ complaint = {}, currentUser, onAssign, onUpdateStatus }
           </div>
           <h3 className="text-lg font-bold text-slate-800 truncate">{title}</h3>
           <p className="mt-1 text-sm text-slate-600 line-clamp-2">{description}</p>
+          <p className="mt-1 text-sm text-slate-900 line-clamp-2"><b>Worker Category : </b>{workerCategory}</p>
         </div>
       </div>
       {isWorker && isUnassigned && (

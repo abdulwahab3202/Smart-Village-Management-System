@@ -78,7 +78,7 @@ const CitizenProfile = () => {
     if (success) {
       Swal.fire('Success!', 'Your profile has been updated.', 'success');
       setIsEditing(false);
-      setBackendUser(prev => ({...prev, ...payload}));
+      setBackendUser(prev => ({ ...prev, ...payload }));
     } else {
       setUpdateStatus({ error: 'Failed to update profile.', success: '' });
     }
@@ -122,17 +122,22 @@ const CitizenProfile = () => {
             </div>
           </div>
           <div className="lg:col-span-2">
-            <h2 className="text-2xl font-bold text-slate-700 mb-4">Your Submitted Complaints</h2>
             {loadingComplaints ? (
               <p>Loading complaints...</p>
+            ) : myComplaints.length > 0 ? (
+              <>
+                <h2 className="text-2xl font-bold text-slate-700 mb-4">Your Submitted Complaints</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {myComplaints.map(c => (
+                    <ComplaintCard key={c.id} complaint={c} />
+                  ))}
+                </div>
+              </>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {myComplaints.length > 0
-                  ? myComplaints.map(c => <ComplaintCard key={c.id} complaint={c} />)
-                  : <p className="text-slate-500 bg-white p-6 rounded-lg shadow-sm">You have no complaints.</p>}
-              </div>
+              <p>No complaints submitted</p>
             )}
           </div>
+
         </div>
       </div>
     </div>

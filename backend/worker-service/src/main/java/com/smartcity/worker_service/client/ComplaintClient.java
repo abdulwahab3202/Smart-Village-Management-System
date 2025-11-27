@@ -11,9 +11,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "complaint-service")
 public interface ComplaintClient {
 
-    @GetMapping("api/complaint/get-all")
-    ResponseEntity<CommonResponse> getAllComplaints();
+    @GetMapping("api/complaint/get-complaints")
+    ResponseEntity<CommonResponse> getAllComplaints(@RequestParam("worker-category") String workerCategory);
 
     @PutMapping("api/complaint/update-status/{complaintId}")
-    void updateComplaintStatus(@PathVariable("complaintId") String complaintId, @RequestParam("status") String status);
+    void updateComplaintStatus(@PathVariable("complaintId") String complaintId,
+                               @RequestParam("status") String status);
 }

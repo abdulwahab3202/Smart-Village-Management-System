@@ -2,6 +2,7 @@ package com.smartcity.worker_service.service;
 
 import com.smartcity.worker_service.model.CommonResponse;
 import com.smartcity.worker_service.request.WorkerRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public interface IWorkerService {
 
@@ -17,6 +18,6 @@ public interface IWorkerService {
 
     CommonResponse findAvailableWorkers();
 
-    CommonResponse getAllComplaints();
+    CommonResponse getAllComplaints(HttpServletRequest request);
 
 }
