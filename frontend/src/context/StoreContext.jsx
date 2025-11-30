@@ -167,9 +167,9 @@ export const StoreContextProvider = (props) => {
   const fetchUserComplaints = useCallback(async (userId) => (await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/user/${userId}`)).data, [makeAuthenticatedRequest]);
   const fetchWorkerAssignments = useCallback(async (workerId) => (await makeAuthenticatedRequest(`http://localhost:8082/api/work-assignment/worker/${workerId}`)).data, [makeAuthenticatedRequest]);
   const fetchWorkerById = useCallback(async (workerId) => (await makeAuthenticatedRequest(`http://localhost:8082/api/worker/get/${workerId}`)).data, [makeAuthenticatedRequest]);
+  const fetchAssignedComplaint = useCallback(async () => (await makeAuthenticatedRequest(`http://localhost:8082/api/worker/get/assigned-complaint`)).data, [makeAuthenticatedRequest]);
   const fetchComplaintById = useCallback(async (complaintId) => (await makeAuthenticatedRequest(`http://localhost:8080/api/complaint/get/${complaintId}`)).data, [makeAuthenticatedRequest]);
   const fetchUserById = useCallback(async (userId) => (await makeAuthenticatedRequest(`http://localhost:8081/api/user/get/${userId}`)).data, [makeAuthenticatedRequest]);
-
   // --- ACTION FUNCTIONS ---
   const deleteUser = async (userId) => {
     try {
@@ -249,7 +249,7 @@ export const StoreContextProvider = (props) => {
     if (token && storedUser) {
       const user = JSON.parse(storedUser);
       setCurrentUser(user);
-      fetchData(user);
+      fetchData(user); 
     } else {
       setLoading(false);
     }
@@ -259,7 +259,7 @@ export const StoreContextProvider = (props) => {
     token, currentUser, complaints, allUsers, allAssignments, loading, error, 
     login, register, logout,
     fetchComplaints: () => fetchData(currentUser),
-    fetchAllUsers, fetchAllCitizens, fetchAllWorkers, findAvailableWorkers,
+    fetchAllUsers, fetchAllCitizens, fetchAllWorkers, findAvailableWorkers, fetchAssignedComplaint,
     deleteUser, deleteComplaint, assignComplaint, updateComplaintStatus, applyPenalty, updateUser, 
     fetchUserComplaints, fetchWorkerAssignments, fetchWorkerById, fetchComplaintById, fetchUserById,
     isSignedIn: !!token,

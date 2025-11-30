@@ -79,7 +79,7 @@ const CreateComplaintForm = ({ onClose, onSuccess }) => {
             >
               <option value="">Select Category</option>
               <option value="Plumber">Plumber</option>
-              <option value="Electrician">Electricician</option>
+              <option value="Electrician">Electrician</option>
               <option value="Cleaner">Cleaner</option>
             </select>
           </div>

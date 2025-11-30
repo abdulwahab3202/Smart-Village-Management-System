@@ -77,6 +77,28 @@ public class WorkerServiceImpl implements IWorkerService {
     }
 
     @Override
+    public CommonResponse getAssignedComplaint(HttpServletRequest request){
+        CommonResponse response = new CommonResponse();
+        Claims userClaims = (Claims) request.getAttribute("userClaims");
+        Optional<Worker> workerOpt = Optional.ofNullable(workerRepository.getWorkerById(userClaims.get("userId", String.class)));
+        if(workerOpt.isEmpty()){
+            response.setStatus(HttpStatus.NOT_FOUND);
+            response.setResponseStatus(ResponseStatus.FAILED);
+            response.setMessage("Worker not found");
+            response.setStatusCode(HttpStatus.NOT_FOUND.value());
+            return response;
+        }
+        Worker worker = workerOpt.get();
+        String assignedComplaint = worker.getAssignedComplaint();
+        response.setResponseStatus(ResponseStatus.SUCCESS);
+        response.setMessage("Your Assigned Complaint");
+        response.setData(assignedComplaint);
+        response.setStatus(HttpStatus.OK);
+        response.setStatusCode(HttpStatus.OK.value());
+        return response;
+    }
+
+    @Override
     public CommonResponse updateWorker(String workerId, WorkerRequest request) {
         CommonResponse response = new CommonResponse();
         Optional<Worker> workerOpt = Optional.ofNullable(workerRepository.getWorkerById(workerId));
@@ -180,7 +202,7 @@ public class WorkerServiceImpl implements IWorkerService {
         response.setSpecialization(worker.getSpecialization());
         response.setTotalCredits(worker.getTotalCredits());
         response.setAvailable(worker.isAvailable());
-        response.setAssignedComplaints(worker.getAssignedComplaints());
+        response.setAssignedComplaint(worker.getAssignedComplaint());
         response.setCreatedOn(worker.getCreatedOn());
         response.setUpdateOn(worker.getUpdatedOn());
         return response;

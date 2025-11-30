@@ -17,6 +17,9 @@ public interface IWorkerController {
     @GetMapping("/get/{workerId}")
     ResponseEntity<CommonResponse> getWorkerById(@PathVariable String workerId);
 
+    @GetMapping("/get/assigned-complaint")
+    ResponseEntity<CommonResponse> getAssignedComplaint(HttpServletRequest request);
+
     @PutMapping("/update/{workerId}")
     ResponseEntity<CommonResponse> updateWorker(@PathVariable String workerId, @RequestBody WorkerRequest request);
 

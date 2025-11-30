@@ -24,5 +24,5 @@ public class Worker {
     private int totalCredits;
     private Date createdOn;
     private Date updatedOn;
-    private List<String> assignedComplaints = new ArrayList<>();
+    private String assignedComplaint;
 }

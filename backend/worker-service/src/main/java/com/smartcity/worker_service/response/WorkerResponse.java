@@ -13,7 +13,7 @@ public class WorkerResponse {
     private String specialization;
     private boolean isAvailable;
     private int totalCredits;
-    private List<String> assignedComplaints;
+    private String assignedComplaint;
     private Date createdOn;
     private Date updateOn;
 }

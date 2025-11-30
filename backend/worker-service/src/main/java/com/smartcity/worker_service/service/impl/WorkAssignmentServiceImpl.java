@@ -54,9 +54,15 @@ public class WorkAssignmentServiceImpl implements IWorkAssignmentService {
             return response;
         }
         Worker worker = workerRepository.getWorkerById(workAssignmentRequest.getWorkerId());
-        List<String> assignedComplaints = worker.getAssignedComplaints();
-        assignedComplaints.add(workAssignmentRequest.getComplaintId());
-        worker.setAssignedComplaints(assignedComplaints);
+        String assignedComplaint = worker.getAssignedComplaint();
+        if(assignedComplaint != null){
+            response.setResponseStatus(ResponseStatus.FAILED);
+            response.setMessage("Cannot assign more than one complaint");
+            response.setStatus(HttpStatus.BAD_REQUEST);
+            response.setStatusCode(HttpStatus.BAD_REQUEST.value());
+            return response;
+        }
+        worker.setAssignedComplaint(workAssignmentRequest.getComplaintId());
         worker.setAvailable(false);
         workerRepository.save(worker);
         WorkAssignment assignment = new WorkAssignment();
@@ -103,12 +109,8 @@ public class WorkAssignmentServiceImpl implements IWorkAssignmentService {
             worker.setTotalCredits(worker.getTotalCredits() + assignment.getCreditPoints());
             workerRepository.save(worker);
             Worker w = workerRepository.getWorkerById(assignment.getWorkerId());
-            List<String> assignedComplaints = w.getAssignedComplaints();
-            assignedComplaints.remove(assignment.getComplaintId());
-            w.setAssignedComplaints(assignedComplaints);
-            if(w.getAssignedComplaints().isEmpty()){
-                w.setAvailable(true);
-            }
+            w.setAssignedComplaint(null);
+            w.setAvailable(true);
             workerRepository.save(w);
         }
         workAssignmentRepository.save(assignment);

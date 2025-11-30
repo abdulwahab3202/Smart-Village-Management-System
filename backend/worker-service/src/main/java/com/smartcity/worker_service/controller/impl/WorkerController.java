@@ -52,6 +52,17 @@ public class WorkerController implements IWorkerController {
     }
 
     @Override
+    @PreAuthorize("hasAnyRole('ADMIN','WORKER')")
+    public ResponseEntity<CommonResponse> getAssignedComplaint(HttpServletRequest request) {
+        try {
+            CommonResponse response = workerService.getAssignedComplaint(request);
+            return ResponseEntity.status(response.getStatusCode()).body(response);
+        } catch (Exception e) {
+            return exceptionHandler(e, "Get Assigned Complaint");
+        }
+    }
+
+    @Override
     @PreAuthorize("hasRole('WORKER')")
     public ResponseEntity<CommonResponse> updateWorker(String workerId, WorkerRequest request) {
         try {

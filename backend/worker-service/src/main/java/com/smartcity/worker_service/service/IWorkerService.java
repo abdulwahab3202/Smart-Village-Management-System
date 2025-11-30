@@ -12,6 +12,8 @@ public interface IWorkerService {
 
     CommonResponse getWorkerById(String workerId);
 
+    CommonResponse getAssignedComplaint(HttpServletRequest request);
+
     CommonResponse updateWorker(String workerId, WorkerRequest request);
 
     CommonResponse deleteWorker(String workerId);
